@@ -8,7 +8,10 @@ impl BybitWebSocketApi {
     }
 }
 
-impl WebSocketApi for BybitWebSocketApi {
+impl WebSocketApi<BybitWebSocketApi> for BybitWebSocketApi {
+    fn new() -> Self {
+        BybitWebSocketApi::new()
+    }
     async fn subscribe_orderbook(&mut self, symbol: &str) -> Result<(), std::fmt::Error> {
         Ok(())
     }

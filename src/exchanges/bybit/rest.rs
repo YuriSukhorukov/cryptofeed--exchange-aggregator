@@ -8,7 +8,10 @@ impl BybitRestApi {
     }
 }
 
-impl RestApi for BybitRestApi {
+impl RestApi<BybitRestApi> for BybitRestApi {
+    fn new() -> Self {
+        BybitRestApi::new()
+    }
     async fn get_orderbook(&self, symbol: &str) -> Result<(), std::fmt::Error> {
         Ok(())
     }
