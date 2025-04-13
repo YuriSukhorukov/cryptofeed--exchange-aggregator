@@ -1,5 +1,7 @@
 // use std::sync::Arc;
 
+use std::time::Instant;
+
 use futures_util::{
     SinkExt,
     StreamExt,
@@ -32,7 +34,19 @@ impl WebSocketApi<BybitWebSocketApi> for BybitWebSocketApi {
     fn new() -> Self {
         BybitWebSocketApi::new()
     }
-    async fn subscribe_orderbook(&mut self, symbol: &str) -> Result<(), Error> {
+    async fn subscribe_orderbook(&mut self, args: Vec<&str>) -> Result<(), Error> {
+        // levels: 1, 50, 200, 500
+        let subscribe_msg = serde_json::json!({
+            "op": "subscribe",
+            "args": args
+        });
+        let msg_text = subscribe_msg.to_string();
+        let message =
+            tokio_tungstenite::tungstenite::Message::Text(Utf8Bytes::try_from(msg_text).unwrap());
+        let (mut write, mut read) = self.stream.as_mut().unwrap().split();
+        if let Err(msg) = write.send(message).await {
+            return Err(Error::new(msg.to_string()));
+        };
         Ok(())
     }
     async fn subscribe_trades(&mut self, args: Vec<&str>) -> Result<(), Error> {
@@ -59,7 +73,10 @@ impl WebSocketApi<BybitWebSocketApi> for BybitWebSocketApi {
             let Some(Ok(mut msg)) = read.next().await else {
                 break;
             };
+            let start = Instant::now();
             println!("{:?}", msg);
+            let duration = start.elapsed();
+            println!("{duration:?}");
         }
 
         Ok(())

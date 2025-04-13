@@ -33,6 +33,42 @@ async fn main() {
         ])
         .await
         .unwrap();
+    bybit_ws
+        .subscribe_orderbook(vec![
+            "orderbook.1.BTCUSDT",
+            "orderbook.1.ETHUSDT",
+            "orderbook.1.SOLUSDT",
+            "orderbook.1.SUIUSDT",
+        ])
+        .await
+        .unwrap();
+    bybit_ws
+        .subscribe_orderbook(vec![
+            "orderbook.50.BTCUSDT",
+            "orderbook.50.ETHUSDT",
+            "orderbook.50.SOLUSDT",
+            "orderbook.50.SUIUSDT",
+        ])
+        .await
+        .unwrap();
+    bybit_ws
+        .subscribe_orderbook(vec![
+            "orderbook.200.BTCUSDT",
+            "orderbook.200.ETHUSDT",
+            "orderbook.200.SOLUSDT",
+            "orderbook.200.SUIUSDT",
+        ])
+        .await
+        .unwrap();
+    bybit_ws
+        .subscribe_orderbook(vec![
+            "orderbook.500.BTCUSDT",
+            "orderbook.500.ETHUSDT",
+            "orderbook.500.SOLUSDT",
+            "orderbook.500.SUIUSDT",
+        ])
+        .await
+        .unwrap();
 
     bybit_ws.run_loop().await.unwrap();
 }

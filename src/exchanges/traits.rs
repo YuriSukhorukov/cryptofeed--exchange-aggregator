@@ -13,7 +13,7 @@ pub trait WebSocketApi<T> {
     fn new() -> T;
     async fn run_loop(&mut self) -> Result<(), Error>;
     async fn connect(&mut self, host: &str, target: &str) -> Result<(), Error>;
-    async fn subscribe_orderbook(&mut self, symbol: &str) -> Result<(), Error>;
+    async fn subscribe_orderbook(&mut self, args: Vec<&str>) -> Result<(), Error>;
     async fn subscribe_trades(&mut self, args: Vec<&str>) -> Result<(), Error>;
 }
 
