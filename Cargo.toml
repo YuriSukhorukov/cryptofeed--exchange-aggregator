@@ -13,3 +13,13 @@ tokio-tungstenite = { version = "0.26.2", features = ["native-tls"] }
 tungstenite = { version = "0.26.2", features = ["rustls-tls-webpki-roots"] }
 serde = { version = "1.0.219", features = ["derive"] }
 url = "2.5.4"
+
+[profile.release]
+opt-level = 3           # или "3" для максимальной скорости
+lto = true              # link-time optimization
+codegen-units = 1       # уменьшает параллелизм, но лучше для оптимизации
+panic = "abort"         # быстрее и меньше бинарник
+strip = "symbols"       # уменьшает размер, полезно для WebAssembly, CLI и т.п.
+debug = false           # можно включить для профилирования, но лучше выключить
+incremental = false     # не нужна для релизной сборки
+overflow-checks = false # отключает проверки арифм. переполнения
