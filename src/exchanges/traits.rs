@@ -1,5 +1,7 @@
-use crate::exchanges::models::{OrderBook, Ticker};
-use std::fmt::Error;
+use crate::exchanges::{
+    error::Error,
+    models::{OrderBook, Ticker},
+};
 
 pub trait RestApi<T> {
     fn new() -> T;
@@ -9,8 +11,10 @@ pub trait RestApi<T> {
 
 pub trait WebSocketApi<T> {
     fn new() -> T;
-    async fn subscribe_orderbook(&mut self, symbol: &str) -> Result<(), Error>;
     async fn run_loop(&mut self) -> Result<(), Error>;
+    async fn connect(&mut self, host: &str, target: &str) -> Result<(), Error>;
+    async fn subscribe_orderbook(&mut self, symbol: &str) -> Result<(), Error>;
+    async fn subscribe_trades(&mut self, args: Vec<&str>) -> Result<(), Error>;
 }
 
 pub fn create_rest_api<T: RestApi<T>>() -> T {

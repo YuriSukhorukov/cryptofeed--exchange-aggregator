@@ -8,14 +8,14 @@ impl BinanceWebSocketApi {
     }
 }
 
-impl WebSocketApi<BinanceWebSocketApi> for BinanceWebSocketApi {
-    fn new() -> Self {
-        BinanceWebSocketApi::new()
-    }
-    async fn subscribe_orderbook(&mut self, symbol: &str) -> Result<(), std::fmt::Error> {
-        Ok(())
-    }
-    async fn run_loop(&mut self) -> Result<(), std::fmt::Error> {
-        Ok(())
-    }
-}
+// impl WebSocketApi<BinanceWebSocketApi> for BinanceWebSocketApi {
+//     fn new() -> Self {
+//         BinanceWebSocketApi::new()
+//     }
+//     async fn subscribe_orderbook(&mut self, symbol: &str) -> Result<(), std::fmt::Error> {
+//         Ok(())
+//     }
+//     async fn run_loop(&mut self) -> Result<(), std::fmt::Error> {
+//         Ok(())
+//     }
+// }
