@@ -2,6 +2,7 @@ use crate::exchanges::{
     error::Error,
     models::{OrderBook, Ticker},
 };
+use serde_json::Value;
 
 pub trait RestApi<T> {
     fn new() -> T;
@@ -11,10 +12,9 @@ pub trait RestApi<T> {
 
 pub trait WebSocketApi<T> {
     fn new() -> T;
-    async fn run_loop(&mut self) -> Result<(), Error>;
     async fn connect(&mut self, host: &str, target: &str) -> Result<(), Error>;
-    async fn subscribe_orderbook(&mut self, args: Vec<&str>) -> Result<(), Error>;
-    async fn subscribe_trades(&mut self, args: Vec<&str>) -> Result<(), Error>;
+    async fn subscribe(&mut self, msg: Value) -> Result<(), Error>;
+    async fn run_loop(&mut self, tx: tokio::sync::mpsc::Sender<Option<String>>) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 pub fn create_rest_api<T: RestApi<T>>() -> T {

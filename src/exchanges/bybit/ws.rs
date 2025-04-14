@@ -7,7 +7,7 @@ use futures_util::{
     StreamExt,
     // stream::{SplitSink, SplitStream},
 };
-
+use serde_json::Value;
 use tokio::net::TcpStream;
 use tokio_tungstenite::{MaybeTlsStream, WebSocketStream};
 use tungstenite::{Utf8Bytes, client::IntoClientRequest};
@@ -20,8 +20,12 @@ type Stream = WebSocketStream<MaybeTlsStream<TcpStream>>;
 // type Read = SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>;
 pub struct BybitWebSocketApi {
     stream: Option<Stream>,
-    // write: Option<Write>,
-    // read: Option<Read>,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct SubscribeMsg {
+    pub op: String,
+    pub args: Vec<String>,
 }
 
 impl BybitWebSocketApi {
@@ -34,55 +38,8 @@ impl WebSocketApi<BybitWebSocketApi> for BybitWebSocketApi {
     fn new() -> Self {
         BybitWebSocketApi::new()
     }
-    async fn subscribe_orderbook(&mut self, args: Vec<&str>) -> Result<(), Error> {
-        // levels: 1, 50, 200, 500
-        let subscribe_msg = serde_json::json!({
-            "op": "subscribe",
-            "args": args
-        });
-        let msg_text = subscribe_msg.to_string();
-        let message =
-            tokio_tungstenite::tungstenite::Message::Text(Utf8Bytes::try_from(msg_text).unwrap());
-        let (mut write, mut read) = self.stream.as_mut().unwrap().split();
-        if let Err(msg) = write.send(message).await {
-            return Err(Error::new(msg.to_string()));
-        };
-        Ok(())
-    }
-    async fn subscribe_trades(&mut self, args: Vec<&str>) -> Result<(), Error> {
-        // let subscribe_msg = br#"{"op": "subscribe", "args": ["publicTrade.BTCUSDT", "publicTrade.ETHUSDT", "publicTrade.SOLUSDT", "publicTrade.SUIUSDT"]}"#.to_vec();
-        let subscribe_msg = serde_json::json!({
-            "op": "subscribe",
-            "args": args
-        });
-
-        let msg_text = subscribe_msg.to_string();
-        let message =
-            tokio_tungstenite::tungstenite::Message::Text(Utf8Bytes::try_from(msg_text).unwrap());
-
-        let (mut write, mut read) = self.stream.as_mut().unwrap().split();
-        if let Err(msg) = write.send(message).await {
-            return Err(Error::new(msg.to_string()));
-        };
-        Ok(())
-    }
-    async fn run_loop(&mut self) -> Result<(), Error> {
-        let (mut write, mut read) = self.stream.as_mut().unwrap().split();
-
-        loop {
-            let Some(Ok(mut msg)) = read.next().await else {
-                break;
-            };
-            let start = Instant::now();
-            println!("{:?}", msg);
-            let duration = start.elapsed();
-            println!("{duration:?}");
-        }
-
-        Ok(())
-    }
     async fn connect(&mut self, host: &str, target: &str) -> Result<(), Error> {
-        let mut request: hyper::Request<()> = "wss://stream.bybit.com/v5/public/linear"
+        let request: hyper::Request<()> = "wss://stream.bybit.com/v5/public/linear"
             .into_client_request()
             .unwrap();
         // request
@@ -101,6 +58,28 @@ impl WebSocketApi<BybitWebSocketApi> for BybitWebSocketApi {
         };
 
         self.stream = Some(ws_stream);
+
+        Ok(())
+    }
+    async fn subscribe(&mut self, msg: Value) -> Result<(), Error> {
+        let msg_text = msg.to_string();
+        let message =
+            tokio_tungstenite::tungstenite::Message::Text(Utf8Bytes::try_from(msg_text).unwrap());
+        let (mut write, mut read) = self.stream.as_mut().unwrap().split();
+        if let Err(msg) = write.send(message).await {
+            return Err(Error::new(msg.to_string()));
+        };
+        Ok(())
+    }
+    async fn run_loop(&mut self, tx: tokio::sync::mpsc::Sender<Option<String>>) -> Result<(), Box<dyn std::error::Error>> {
+        let (mut write, mut read) = self.stream.as_mut().unwrap().split();
+
+        loop {
+            let Some(Ok(mut msg)) = read.next().await else {
+                break;
+            };
+            tx.send(Some(msg.to_string())).await?;
+        }
 
         Ok(())
     }
