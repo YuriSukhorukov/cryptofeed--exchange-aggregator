@@ -39,6 +39,8 @@ impl WebSocketApi<BybitWebSocketApi> for BybitWebSocketApi {
         BybitWebSocketApi::new()
     }
     async fn connect(&mut self, host: &str, target: &str) -> Result<(), Error> {
+        let address = vec![host, target].join("/");
+        println!("Connecting to: {}", &address);
         let request: hyper::Request<()> = "wss://stream.bybit.com/v5/public/linear"
             .into_client_request()
             .unwrap();
@@ -48,7 +50,7 @@ impl WebSocketApi<BybitWebSocketApi> for BybitWebSocketApi {
 
         let (ws_stream, response) = match tokio_tungstenite::connect_async(request).await {
             Ok(res) => {
-                println!("Connected");
+                println!("Connected to Bybit");
                 res
             }
             Err(err) => {
@@ -71,7 +73,10 @@ impl WebSocketApi<BybitWebSocketApi> for BybitWebSocketApi {
         };
         Ok(())
     }
-    async fn run_loop(&mut self, tx: tokio::sync::mpsc::Sender<Option<String>>) -> Result<(), Box<dyn std::error::Error>> {
+    async fn run_loop(
+        &mut self,
+        tx: tokio::sync::mpsc::Sender<Option<String>>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let (mut write, mut read) = self.stream.as_mut().unwrap().split();
 
         loop {

@@ -22,7 +22,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap();
 
     bybit_ws
-        .connect("wss://stream.bybit.com", "/v5/public/linear")
+        .connect("wss://stream.bybit.com", "v5/public/linear")
         .await
         .unwrap();
     bybit_ws
@@ -69,7 +69,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         while let Some(msg) = rx.recv().await {
             match msg {
                 Some(msg) => println!("{msg:?}"),
-                None => {},
+                None => {}
             }
         }
     });
